@@ -1,0 +1,32 @@
+Workflow
+1. 	Data Ingestion
+        	-Inserting data inside database
+        	-exporting it to CSV file
+3. 	EDA(Exploratory Data Analytics)
+        	-Visualizing the data
+        	-Univariate,Bivariate,Multivariate Analysis
+4. 	Model Selection And Tuning
+        	-Trying different Machine Learning Algorithms
+        	-Evaluation Of Machine Learning Algorithms
+        	-Selection of Best Performing Algorithm
+        	-HyperParameter Tuning
+5. 	Prediction
+        	-Predicting the Credit card Defaulters
+Workflow
+
+Load the Dataset
+Exploratory Data Analysis
+-Visualizing the data
+Change age and gender mapping
+	
+CNN Model Creation
+1. reading the images. 
+2. Decode JPEG content into an RGB grid of pixels. 
+3. converting into Floating points tensors taking input to neural network
+Age classification 
+	-Predicting the Age
+Gender classification 
+-Predicting the Gender
+Plot the Model Results
+
+	

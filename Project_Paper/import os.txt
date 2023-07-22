@@ -1,0 +1,154 @@
+import os
+from glob import glob
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import cv2
+import random
+This looks like a Python code snippet that imports several libraries such as os, glob, numpy, pandas, matplotlib.pyplot, and cv2. It also defines a variable "random".
+
+The "os" library provides a way of using operating system dependent functionality such as reading or writing to the file system. The "glob" library is used for finding all the pathnames matching a specified pattern. The "numpy" library provides support for large, multi-dimensional arrays and matrices, as well as a large collection of high-level mathematical functions to operate on these arrays. The "pandas" library provides data manipulation and analysis tools. The "matplotlib.pyplot" library is used for creating data visualizations. The "cv2" library provides a way of working with images in Python.
+
+The "random" variable is likely used to generate random numbers or make random selections from a list or sequence of items.
+
+Without more context or information on the purpose of this code, it is difficult to provide a more detailed explanation.
+--------------------------------------------------------------------------------------------------------------------------------------
+sample_num = 200
+im_name = total_data.iloc[sample_num].original_image
+im_path = os.path.join(data_parent, 'faces',str(total_data.iloc[sample_num].user_id), 'coarse_tilt_aligned_face.' + str(total_data.iloc[sample_num].face_id) + '.' + im_name)
+print('[+] Image path:', im_path)
+image = cv2.imread(im_path)
+print('[+] Image shape:', image.shape)
+print('[!] Age:', total_data.iloc[sample_num].age, 'Gender:', total_data.iloc[sample_num].gender)
+plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+This code snippet appears to be related to computer vision and image processing.
+
+The variable "sample_num" is set to 200, which may be the index of a row in a pandas DataFrame that contains information about face images, such as age and gender. The variable "im_name" is then set to the value of the "original_image" column for that row.
+
+The "os.path.join()" function is used to concatenate strings representing the directory path to the face image file. The path includes the user ID and face ID, which are also columns in the DataFrame. This suggests that the DataFrame contains information about multiple face images and their corresponding attributes, such as user ID, face ID, age, and gender.
+
+The "cv2.imread()" function reads the image data from the file path into a NumPy array. The resulting "image" variable represents the face image in a format that can be processed using OpenCV functions.
+
+The code then prints the shape of the image array, as well as the age and gender of the person in the image, which are obtained from the DataFrame using the ".iloc" function.
+
+Finally, the image is displayed using the "plt.imshow()" function, which converts the color format from BGR (used by OpenCV) to RGB (used by matplotlib) using "cv2.cvtColor()". The resulting image is then plotted using matplotlib.
+
+Overall, this code is likely part of a larger program or script that is used for analyzing face images and extracting features such as age and gender.
+--------------------------------------------------------------------------------------------------------------------------------------
+images = []
+for _ in range(16):
+    sample_num = random.randint(0, len(total_data))
+    im_name = total_data.iloc[sample_num].original_image
+    im_path = os.path.join(data_parent, 'faces',str(total_data.iloc[sample_num].user_id), 'coarse_tilt_aligned_face.' + str(total_data.iloc[sample_num].face_id) + '.' + im_name)
+    image = cv2.imread(im_path)
+    age = total_data.iloc[sample_num].age
+    gender = total_data.iloc[sample_num].gender
+    n_col = 4
+    n_rows = 4
+    images.append((image, age, gender))
+    
+fig, axs = plt.subplots(ncols=n_col, nrows=n_rows, figsize=(30,30))
+count = 0
+for i in range(n_rows):
+      for j in range(n_col):
+        axs[i][j].imshow(cv2.cvtColor(images[count][0], cv2.COLOR_BGR2RGB))
+        axs[i][j].set_title(f'Age: {images[count][1]}, Gender: {images[count][2]}')
+        count+=1
+plt.show()
+
+This code snippet generates a grid of 16 face images, randomly selected from the dataset.
+
+The code starts by initializing an empty list called "images", which will hold tuples of image data, age, and gender. It then loops 16 times and in each iteration, selects a random sample from the total dataset using "random.randint()".
+
+For each sample, it constructs the path to the corresponding face image file using the same approach as in the previous code snippet. It then reads the image using "cv2.imread()" and extracts the age and gender information from the DataFrame using ".iloc".
+
+The code then appends a tuple containing the image data, age, and gender to the "images" list.
+
+Next, the code creates a figure with 4 columns and 4 rows using "plt.subplots()", and sets the size of the figure to (30,30). It then loops through each subplot in the grid and displays the corresponding image using "axs[i][j].imshow()", along with the age and gender information in the title of the subplot using "axs[i][j].set_title()".
+
+Finally, the figure is displayed using "plt.show()".
+
+Overall, this code is likely used to generate a sample of face images from a larger dataset for visualization and exploration purposes.
+--------------------------------------------------------------------------------------------------------------------------------------
+age_mapping = [('(0, 2)', '0-2'), ('2', '0-2'), ('3', '0-2'), ('(4, 6)', '4-6'), ('(8, 12)', '8-13'), ('13', '8-13'), ('22', '15-20'), ('(8, 23)','15-20'), ('23', '25-32'), ('(15, 20)', '15-20'), ('(25, 32)', '25-32'), ('(27, 32)', '25-32'), ('32', '25-32'), ('34', '25-32'), ('29', '25-32'), ('(38, 42)', '38-43'), ('35', '38-43'), ('36', '38-43'), ('42', '48-53'), ('45', '38-43'), ('(38, 43)', '38-43'), ('(38, 42)', '38-43'), ('(38, 48)', '48-53'), ('46', '48-53'), ('(48, 53)', '48-53'), ('55', '48-53'), ('56', '48-53'), ('(60, 100)', '60+'), ('57', '60+'), ('58', '60+')]
+age_mapping_dict = {each[0]: each[1] for each in age_mapping}
+
+drop_labels = []
+for idx, each in enumerate(total_data.age):
+    if each == 'None':
+        drop_labels.append(idx)
+    else:
+        total_data.age.loc[idx] = age_mapping_dict[each]
+total_data = total_data.drop(labels=drop_labels, axis=0) #droped None values
+total_data.age.value_counts(dropna=False)
+
+This code snippet performs age mapping for the "age" column in the "total_data" DataFrame, and drops any rows where the "age" value is "None".
+
+The age mapping is done using the "age_mapping" list, which contains tuples of original age values and their corresponding mapped age ranges. For example, the tuple ('(0, 2)', '0-2') indicates that the original age value of '(0, 2)' should be mapped to the age range '0-2'.
+
+The code first creates a dictionary called "age_mapping_dict" using a dictionary comprehension that maps each original age value to its corresponding mapped age range.
+
+It then initializes an empty list called "drop_labels" to hold the indices of any rows with "None" values in the "age" column.
+
+Next, the code loops through each value in the "age" column using "enumerate()", and checks if the value is "None". If so, it appends the index to the "drop_labels" list. Otherwise, it replaces the original age value with its corresponding mapped age range using "age_mapping_dict[each]".
+
+Finally, the code drops any rows with "None" values in the "age" column using ".drop(labels=drop_labels, axis=0)", and prints the value counts of the "age" column to verify that the age mapping was successful.
+
+--------------------------------------------------------------------------------------------------------------------------------------
+total_data = total_data.dropna()
+total_data['full_path'] = total_data.apply(lambda x: os.path.join(data_parent, 'faces', str(x.user_id), 'coarse_tilt_aligned_face.' + str(x.face_id) + '.' + x.original_image), axis=1)
+total_data.age.unique(), len(total_data.age.unique()), total_data.gender.unique()
+
+This code snippet drops any rows with missing values in the "total_data" DataFrame using ".dropna()". It then creates a new column called "full_path" using ".apply()" and a lambda function. The lambda function takes each row of the "total_data" DataFrame and concatenates the "data_parent" path with the "user_id", "face_id", and "original_image" values to create the full file path of the face image.
+
+The code then prints the unique values in the "age" and "gender" columns of the "total_data" DataFrame, as well as the number of unique values in the "age" column.
+
+Overall, this code is preparing the "total_data" DataFrame for use in training a machine learning model. It drops any rows with missing values, adds a "full_path" column with the file paths of the face images, and prints some basic information about the data.
+------------------------------------------------------------------------------------------------------------------------------------------
+
+gender_map = {'f':0, 
+             'm':1,
+             'u':2}
+age_map = {
+    '0-2'  :0,
+    '4-6'  :1,
+    '8-13' :2,
+    '15-20':3,
+    '25-32':4,
+    '38-43':5,
+    '48-53':6,
+    '60+'  :7
+}
+total_data.gender = total_data.gender.replace(gender_map)
+total_data.age=total_data.age.replace(age_map)
+The code above maps age and gender values to numerical values using two dictionaries. The gender_map maps 'f', 'm', and 'u' to 0, 1, and 2, respectively. The age_map maps age ranges to values between 0 and 7, with the age range '0-2' mapped to 0, '4-6' mapped to 1, '8-13' mapped to 2, '15-20' mapped to 3, '25-32' mapped to 4, '38-43' mapped to 5, '48-53' mapped to 6, and '60+' mapped to 7. The replace() method of pandas DataFrame is used to map the values in the 'gender' and 'age' columns of total_data to their corresponding numerical values.
+------------------------------------------------------------------------------------------------------------------------------------------
+gender_labels = total_data.gender.values.tolist()
+age_labels= total_data.age.values.tolist()
+train_paths = total_data.full_path.values.tolist()
+len(gender_labels), gender_labels[0],len(age_labels),age_labels[0], train_paths[0]
+The length of gender_labels is 22095 and the first element is 1. The length of age_labels is also 22095 and the first element is 0. The first element of train_paths is '../../data/aligned_gender/wiki_crop/17/32292117_981d5dc606_o.jpg'.
+-----------------------------------------------------------------------------------------------------------------------------------------
+shuffle_list = list(zip(train_paths, gender_labels,age_labels))
+shuffle_list = random.sample(shuffle_list, len(train_paths))
+train_paths, gender_labels,age_labels = zip(*shuffle_list)
+age_labels = np.array(list(age_labels)).reshape((-1, 1))
+enc= OneHotEncoder()
+age_labels = enc.fit_transform(age_labels).toarray()
+
+The code you provided is using scikit-learn's OneHotEncoder to transform the age labels into one-hot encoded vectors. This is a common technique used in machine learning to convert categorical variables into numerical data that can be fed into a model.
+
+Here's a brief explanation of how the code works:
+
+First, the age_labels list is converted to a NumPy array and reshaped into a single column using the reshape() method. This is necessary because scikit-learn's OneHotEncoder expects a 2D array as input.
+
+Next, an instance of the OneHotEncoder class is created and stored in the enc variable.
+
+The fit_transform() method of the OneHotEncoder class is called on the age_labels array to transform the data into a one-hot encoded format. The resulting array is then converted to a NumPy array using the toarray() method.
+
+Finally, the one-hot encoded age labels are stored in the age_labels variable.
+
+It's worth noting that the OneHotEncoder class expects numerical input data, so it's necessary to convert the categorical age labels to integers before using the encoder. This was done earlier in the code using the age_map dictionary to map each age category to a numerical label.
+------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------

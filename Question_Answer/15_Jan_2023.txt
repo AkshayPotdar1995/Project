@@ -1,0 +1,11 @@
+Why u sue Cnn not Regression ?
+
+Convolutional Neural Networks (CNN) are pretty powerful Neural Network architectures when it comes to Image Classification tasks. However, its less known that they are equally capable of performing Image Regression tasks.
+The basic difference between Image Classification and Image Regression tasks is that target variable (the thing we are trying to predict) in Classification task is not continuous while in Regression task it is continuous.
+
+
+—------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+

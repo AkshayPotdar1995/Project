@@ -1,0 +1,280 @@
+1)import tensorflow as tf
+import random
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import OneHotEncoder
+import multiprocessing
+
+exp: used TensorFlow, random, matplotlib.pyplot, sklearn.preprocessing, and multiprocessing 
+libraries
+
+2)train_dataset = tf.data.Dataset.from_tensor_slices((list(train_data), list(train_labels_age)))
+validation_dataset = tf.data.Dataset.from_tensor_slices((list(validation_data),list(validation_labels_age)))
+
+exp: We are using TensorFlow's Dataset API to create datasets from  training and validation data.
+
+tf.data.Dataset.from_tensor_slices() creates a tf.data.Dataset object from the input data, where each element of the dataset 
+corresponds to a slice of the input tensors along the first dimension. In this case, we are passing in two lists: train_data 
+and train_labels_age (for the training dataset), and validation_data and validation_labels_age (for the validation dataset).
+
+The resulting train_dataset and validation_dataset objects will be instances of the tf.data.Dataset class, which can 
+be used to feed data into our TensorFlow model during training and evaluation.
+
+3) def preprocess_func(path, label_age):
+    image = tf.io.read_file(path)
+    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.image.resize(image, [128, 128]) / 255.0
+        
+    return image, label_age
+
+exp: defining a preprocess_func function to preprocess your image data.
+
+The preprocess_func function takes two input arguments: path, which is the file path to the image file, and label_age,
+ which is the corresponding age label for that image.
+
+Inside the function, the image file is read using tf.io.read_file, decoded using tf.image.decode_jpeg, and resized 
+to 128x128 pixels using tf.image.resize. The resulting image is then normalized to have pixel values 
+between 0 and 1 using / 255.0.
+
+The function returns a tuple containing the preprocessed image and its corresponding age label. 
+This function can be used as a preprocessing step for the input data when creating a TensorFlow Dataset object.
+
+4) import multiprocessing
+
+exp: have imported the multiprocessing module, which provides support for parallel processing in Python.
+
+The multiprocessing module allows you to run multiple processes in parallel, which can be useful for tasks that
+ can be split into smaller chunks that can be run independently. This can help improve the performance of your code by 
+taking advantage of multiple cores or CPUs.
+
+Some of the main features of the multiprocessing module include process-based parallelism, inter-process communication, 
+and shared memory. You can use the Process class to create new processes, the Queue class for inter-process communication, 
+and the Value and Array classes for shared memory.
+
+
+
+5)train_batches = train_dataset.shuffle(1000).map(preprocess_func, num_parallel_calls=multiprocessing.cpu_count()).cache().batch(512).prefetch(tf.data.experimental.AUTOTUNE)
+validation_batches = validation_dataset.shuffle(1000).map(preprocess_func, num_parallel_calls=multiprocessing.cpu_count()).cache().batch(512).prefetch(tf.data.experimental.AUTOTUNE)
+
+exp: This code snippet defines two TensorFlow data pipelines for training and validation, respectively. 
+Here's what each line does:
+
+train_dataset.shuffle(1000): This shuffles the training dataset randomly, using a buffer size of 1000.
+
+.map(preprocess_func, num_parallel_calls=multiprocessing.cpu_count()): This applies a preprocessing function 
+preprocess_func to each element of the dataset in parallel, using as many CPU cores as there are on the machine.
+
+.cache(): This caches the preprocessed dataset in memory or on disk (depending on available resources) so that it can be 
+re-used efficiently during training.
+
+.batch(512): This batches the preprocessed dataset into batches of size 512.
+
+.prefetch(tf.data.experimental.AUTOTUNE): This prefetches batches of the preprocessed dataset asynchronously, 
+using a buffer size chosen dynamically by TensorFlow.
+
+The validation pipeline is constructed in the same way, but using the validation dataset instead of the training dataset.
+
+Overall, these pipelines are designed to preprocess the data in parallel, cache it, batch it, and prefetch it,
+ all with the goal of improving training performance.
+
+
+
+6) for image, target1 in train_batches.take(1):
+    print(image.shape, target1.shape)
+    image = tf.squeeze(image[0])
+    print(target1[0])
+
+    plt.imshow(image)
+    plt.show()
+    break
+
+exp: This code snippet is part of a TensorFlow training loop, and is used to visualize a single batch of training data. 
+Here's what each line does:
+
+train_batches.take(1): This takes the first batch of the training data. Since train_batches is a TensorFlow dataset, 
+calling take(1) on it returns a new dataset with only the first batch.
+
+for image, target1 in train_batches.take(1):: This loops over the single batch of data.
+
+print(image.shape, target1.shape): This prints the shapes of the input images and their corresponding target values in 
+the batch.
+
+image = tf.squeeze(image[0]): This extracts the first image from the batch, and removes any singleton dimensions 
+using tf.squeeze(). This is necessary because the input images are typically stored as 4D tensors
+ of shape (batch_size, height, width, channels), but plt.imshow() expects a 3D tensor of shape (height, width, channels).
+
+print(target1[0]): This prints the target value for the first image in the batch.
+
+plt.imshow(image): This displays the image using matplotlib's imshow() function.
+
+plt.show(): This displays the plot on the screen.
+
+break: This breaks out of the loop after the first iteration, since we only wanted to visualize one batch of data.
+
+Overall, this code snippet is a useful way to inspect the training data and make sure that it is being 
+loaded and preprocessed correctly.
+
+
+7) model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(8, 3, padding='same', strides=2, activation='relu', input_shape=(128, 128, 3)),
+#     tf.keras.layers.MaxPooling2D(),
+#     tf.keras.layers.Dropout(0.3),
+    
+    tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+#     tf.keras.layers.Dropout(0.35),
+    
+    tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+#     tf.keras.layers.MaxPooling2D(),
+#     tf.keras.layers.Dropout(0.45),
+    
+    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+#     tf.keras.layers.Dropout(0.5),
+    
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(8, activation = 'softmax')
+])
+
+model.compile(optimizer='adam', loss= tf.losses.CategoricalCrossentropy(), metrics=['accuracy'])
+model.summary()
+
+exp:
+This code defines a sequential TensorFlow model for image classification. Here's what each line does:
+
+tf.keras.models.Sequential([...]): This creates a new sequential model instance.
+
+tf.keras.layers.Conv2D(8, 3, padding='same', strides=2, activation='relu', input_shape=(128, 128, 3)): This adds the first 
+convolutional layer to the model. The arguments are:
+
+8: the number of filters in the layer.
+3: the size of the filter/kernel.
+padding='same': the type of padding used in the layer (same padding).
+strides=2: the stride length for the filter/kernel.
+activation='relu': the activation function used in the layer (ReLU).
+input_shape=(128, 128, 3): the shape of the input data to the layer (128x128 RGB images).
+tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'): This adds the second convolutional layer to the model. The arguments are:
+16: the number of filters in the layer.
+3: the size of the filter/kernel.
+padding='same': the type of padding used in the layer (same padding).
+activation='relu': the activation function used in the layer (ReLU).
+tf.keras.layers.MaxPooling2D(): This adds a max pooling layer to the model. This layer reduces the size of the output from the previous convolutional layer by taking the maximum value within a small region.
+
+tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'): This adds the third convolutional layer to the model. The arguments are:
+
+32: the number of filters in the layer.
+3: the size of the filter/kernel.
+padding='same': the type of padding used in the layer (same padding).
+activation='relu': the activation function used in the layer (ReLU).
+tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'): This adds the fourth convolutional layer to the model. The arguments are:
+64: the number of filters in the layer.
+3: the size of the filter/kernel.
+padding='same': the type of padding used in the layer (same padding).
+activation='relu': the activation function used in the layer (ReLU).
+tf.keras.layers.MaxPooling2D(): This adds another max pooling layer to the model.
+
+tf.keras.layers.Flatten(): This flattens the output of the previous layer into a 1D tensor.
+
+tf.keras.layers.Dense(8, activation = 'softmax'): This adds a fully connected layer with 8 neurons and a softmax activation function, which produces a probability distribution over the 8 classes.
+
+model.compile(optimizer='adam', loss= tf.losses.CategoricalCrossentropy(), metrics=['accuracy']): This compiles the model with the Adam optimizer, categorical cross-entropy loss, and accuracy metric.
+
+model.summary(): This prints a summary of the model architecture, including the layer types, shapes, and number of parameters.
+
+Overall, this model is a simple convolutional neural network with 4 convolutional layers, 2 max pooling layers, and a single fully connected layer. The model can be trained on image classification tasks with 8 classes.
+
+
+
+8)tf.keras.utils.plot_model(model, show_shapes=True)
+This code plots the architecture of the TensorFlow model using the plot_model function from tf.keras.utils. Here's what each argument does:
+
+model: the TensorFlow model to be plotted.
+show_shapes=True: a boolean indicating whether to include the shapes of the input/output tensors for each layer in the plot.
+The resulting plot shows the architecture of the model as a flowchart, with each layer represented as a rectangular block connected to other blocks via arrows. The input layer is at the left side of the plot, and the output layer is at the right side. The arrows represent the flow of data through the model. The plot also shows the number of output channels for each convolutional layer, the shape of the input tensor, and the number of parameters in each layer. Here's an example of what the plot might look like:
+
+model_plot.png
+
+This plot shows the flow of data through a simple convolutional neural network for image classification with 4 convolutional layers, 2 max pooling layers, and a single fully connected layer. The input to the network is a 128x128 RGB image, and the output is a probability distribution over 8 classes.
+
+
+9) history = model.fit(train_batches, epochs=25, validation_data = validation_batches)
+This code trains the TensorFlow model using the fit function. Here's what each argument does:
+
+train_batches: the training dataset, as a tf.data.Dataset object.
+epochs=25: the number of epochs to train the model for.
+validation_data=validation_batches: the validation dataset, as a tf.data.Dataset object.
+The fit function trains the model for the specified number of epochs, and returns a history object that contains information about the training process, including the training and validation loss and accuracy at each epoch. The history object can be used to plot the training and validation curves, and to evaluate the performance of the model on new data.
+
+Note that the fit function automatically batches the data and performs backpropagation to update the model weights. It also monitors the training and validation metrics and logs them for each epoch. During training, the model is evaluated on the validation set after each epoch to prevent overfitting.
+
+After training is complete, the fit function returns the final training and validation loss and accuracy, as well as other information about the training process. These values can be used to evaluate the performance of the model on the training and validation sets.
+
+
+
+
+10) plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
+
+exp: This code plots the accuracy of the model on the training and validation sets as a function of epoch. Here's what each line does:
+
+plt.plot(history.history['accuracy'], label='accuracy'): plots the training accuracy as a function of epoch. The history object returned by the fit function contains a dictionary with keys for the training and validation metrics, including 'accuracy' for the accuracy on the training set.
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy'): plots the validation accuracy as a function of epoch. The history object returned by the fit function contains a dictionary with keys for the training and validation metrics, including 'val_accuracy' for the accuracy on the validation set.
+plt.xlabel('Epoch'): sets the label for the x-axis to 'Epoch'.
+plt.ylabel('Accuracy'): sets the label for the y-axis to 'Accuracy'.
+plt.ylim([0.5, 1]): sets the y-axis limits to [0.5, 1] to focus on the range of accuracies.
+plt.legend(loc='lower right'): adds a legend to the plot with labels for the training and validation accuracy curves.
+The resulting plot shows how the model's accuracy on the training and validation sets changes as the number of epochs increases. The goal is to see the validation accuracy increase as the model learns to generalize better to new data, while the training accuracy may plateau or continue to increase. If the training accuracy continues to increase while the validation accuracy decreases, this indicates overfitting, which means the model is memorizing the training data and not generalizing well to new data.
+
+
+11) image_path = validation_data[1]
+image = cv2.imread(image_path)
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+image = cv2.resize(image, (128, 128)) / 255.0
+plt.imshow(image)
+plt.show()
+
+exp: It looks like this code loads an image from a file path in the validation_data list, converts it from BGR to RGB color format using OpenCV, resizes it to (128, 128), and displays it using plt.imshow(). Here's what each line does:
+
+image_path = validation_data[1]: selects the second element in the validation_data list (assuming the list is zero-indexed), which should be a file path to an image.
+image = cv2.imread(image_path): loads the image from the file path using OpenCV's imread() function, which returns an array of pixel values in BGR color format.
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB): converts the image from BGR to RGB color format using OpenCV's cvtColor() function. This is necessary because Matplotlib (used by plt.imshow()) expects images in RGB format.
+image = cv2.resize(image, (128, 128)) / 255.0: resizes the image to (128, 128) using OpenCV's resize() function, then divides by 255.0 to normalize the pixel values to the range [0, 1]. This is important because the model was trained on normalized data, and it expects inputs in the same format during inference.
+plt.imshow(image): displays the image using Matplotlib's imshow() function.
+plt.show(): shows the plot.
+Overall, this code demonstrates how to load and preprocess an image for input to the trained model.
+
+12) image = np.expand_dims(image, 0)
+prediction = model.predict(image)
+
+exp: This code passes the preprocessed image through the trained model to make a prediction. Here's what each line does:
+
+image = np.expand_dims(image, 0): expands the dimensions of the preprocessed image array to make it compatible with the model's input shape. The model expects a batch of images, each with shape (128, 128, 3), so adding an extra dimension at the beginning of the array creates a batch of size 1.
+prediction = model.predict(image): passes the preprocessed image through the trained model using the predict() method, which returns the predicted probabilities for each class. The output shape of predict() is (1, 8), indicating a batch of size 1 with 8 probabilities (one for each class).
+Overall, this code demonstrates how to use the trained model to make predictions on new images after preprocessing them in the same way as the training data.
+
+13) index = np.argmax(prediction)
+decoding = {0:'0-2', 1:'4-6', 2:'8-13',3:'15-20',4:'25-32',5:'38-43',6:'48-53',7:'60+'}
+
+print('[+] prediction is :', decoding[index]) 
+#print(validation_data[7].age_labels)
+
+exp: This code decodes the predicted class index into a human-readable age group using a dictionary decoding that maps each index to its corresponding age group label. The index of the highest predicted probability is found using the argmax() function, which returns the index of the maximum value in an array. Then, the predicted age group label is printed to the console.
+
+Note that the ground truth age group label for the same image (if available) can be obtained from validation_data[7].age_labels
+
+
+
+
+
+
+
+
+
+
+
+
+
+
